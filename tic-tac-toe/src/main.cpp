@@ -25,7 +25,7 @@ bool init(){
         return false;
     }
 
-    gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED);
+    gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED|SDL_RENDERER_ACCELERATED);
     if(gRenderer == NULL){
         //TODO: error logging
         SDL_DestroyWindow(gWindow);
@@ -54,13 +54,20 @@ int main(int, char**){
     
     bool quit = false;
     SDL_Event e;
+    int x = 0, y = 0;
 
     while(!quit){
         while(SDL_PollEvent(&e) != 0){
             if(e.type == SDL_QUIT){
                 quit = true;
             }
+            if(e.type == SDL_MOUSEBUTTONUP){
+                SDL_GetMouseState(&x, &y);
+                std::cout << "x position is: " << x / (SCREEN_WIDTH / 3) << std::endl;
+                std::cout << "y position is: " << y / (SCREEN_HEIGHT / 3) << std::endl;
+            }
         }
+
         SDL_SetRenderDrawColor(gRenderer, 255, 255, 255, 255);
         SDL_RenderClear(gRenderer);
 
