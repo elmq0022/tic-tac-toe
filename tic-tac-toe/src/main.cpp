@@ -47,6 +47,62 @@ void clean(){
     SDL_Quit();
 }
 
+class Board
+{
+    protected:
+        int player;
+        int grid[9];
+        void updatePlayer();
+        void scoreBoard();
+        const static int X=0;
+        const static int Y=1;
+        const static int E=-1;
+
+    public:
+        Board();
+        void updateBoard(int col, int row);
+        void printBoard();
+};
+
+Board::Board()
+{
+    this->player = 0;
+    this->grid[0] = -1;
+    this->grid[1] = -1;
+    this->grid[2] = -1;
+    this->grid[3] = -1;
+    this->grid[4] = -1;
+    this->grid[5] = -1;
+    this->grid[6] = -1;
+    this->grid[7] = -1;
+    this->grid[8] = -1;
+}
+
+void Board::updatePlayer(){
+    Board::player = (Board::player + 1) % 2;
+}
+
+void Board::updateBoard(int col, int row)
+{
+    int loc = col + 3*row;
+    if(this->grid[loc] == -1){
+        this->grid[loc] = this->player;
+        this->updatePlayer();
+    }
+}
+
+void Board::scoreBoard()
+{
+
+}
+
+void Board::printBoard()
+{
+    std::cout << this->grid[0] << " " << this->grid[1] << " " << this->grid[2] << std::endl;
+    std::cout << this->grid[3] << " " << this->grid[4] << " " << this->grid[5] << std::endl;
+    std::cout << this->grid[6] << " " << this->grid[7] << " " << this->grid[8] << std::endl;
+}
+
 int main(int, char**){
     if(!init()){
         return 1;
@@ -56,6 +112,9 @@ int main(int, char**){
     SDL_Event e;
     int x = 0, y = 0;
 
+    Board b = Board();
+    b.printBoard();
+
     while(!quit){
         while(SDL_PollEvent(&e) != 0){
             if(e.type == SDL_QUIT){
@@ -63,8 +122,13 @@ int main(int, char**){
             }
             if(e.type == SDL_MOUSEBUTTONUP){
                 SDL_GetMouseState(&x, &y);
-                std::cout << "x position is: " << x / (SCREEN_WIDTH / 3) << std::endl;
-                std::cout << "y position is: " << y / (SCREEN_HEIGHT / 3) << std::endl;
+                int col = x / (SCREEN_WIDTH / 3); 
+                int row = y / (SCREEN_HEIGHT / 3);
+                std::cout << "x position is: " << col << std::endl;
+                std::cout << "y position is: " << row << std::endl;
+                b.updateBoard(col, row);
+                b.printBoard();
+
             }
         }
 
