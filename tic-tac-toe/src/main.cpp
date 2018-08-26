@@ -53,18 +53,23 @@ class Board
         int player;
         int grid[9];
         void updatePlayer();
-        void scoreBoard();
-        const static int X=0;
-        const static int Y=1;
-        const static int E=-1;
+        int scoreBoard();
+        int check_row(int row);
+        int check_col(int col);
 
     public:
         Board();
-        void updateBoard(int col, int row);
+        int updateBoard(int col, int row);
+        void resetBoard();
         void printBoard();
 };
 
 Board::Board()
+{
+    this->resetBoard();
+}
+
+void Board::resetBoard()
 {
     this->player = 0;
     this->grid[0] = -1;
@@ -82,18 +87,63 @@ void Board::updatePlayer(){
     Board::player = (Board::player + 1) % 2;
 }
 
-void Board::updateBoard(int col, int row)
+int Board::updateBoard(int col, int row)
 {
     int loc = col + 3*row;
     if(this->grid[loc] == -1){
         this->grid[loc] = this->player;
         this->updatePlayer();
+        return this->scoreBoard();
+    }
+    return -1;
+}
+
+int Board::check_row(int row)
+{
+    if(this->grid[3*row]!=-1 && this->grid[3*row]==this->grid[3*row+1] && this->grid[3*row+1]==this->grid[3*row+2])
+    {
+        return grid[3*row];
+    }
+    else{
+        return -1;
     }
 }
 
-void Board::scoreBoard()
+int Board::check_col(int col)
 {
+    if(this->grid[col]!=-1 && this->grid[col]==this->grid[col+3] && this->grid[col+3]==this->grid[col+6])
+    {
+        return grid[col];
+    }
+    else{
+        return -1;
+    }
+}
 
+int Board::scoreBoard()
+{
+    //check rows
+    if(this->check_row(0)!=-1){return this->check_row(0);}
+    if(this->check_row(1)!=-1){return this->check_row(1);}
+    if(this->check_row(2)!=-1){return this->check_row(2);}
+
+    //check columns
+    if(this->check_col(0)!=-1){return this->check_col(0);}
+    if(this->check_col(1)!=-1){return this->check_col(1);}
+    if(this->check_col(2)!=-1){return this->check_col(2);}
+
+    //check diagonals
+    if(this->grid[0]!=-1 && this->grid[0]==this->grid[4] && this->grid[4]==this->grid[8])
+    {
+        return this->grid[0];
+    }
+
+    if(this->grid[2]!=-1 && this->grid[2]==this->grid[4] && this->grid[4]==this->grid[6])
+    {
+        return this->grid[2];
+    }
+
+    return -1;
 }
 
 void Board::printBoard()
@@ -126,7 +176,13 @@ int main(int, char**){
                 int row = y / (SCREEN_HEIGHT / 3);
                 std::cout << "x position is: " << col << std::endl;
                 std::cout << "y position is: " << row << std::endl;
-                b.updateBoard(col, row);
+                int winner = b.updateBoard(col, row);
+                if(winner != -1)
+                {
+                    std::cout << std::to_string(winner) << std::endl;
+                    std::cout << ((winner==0)?"X":"Y") << " won the game!" << std::endl;
+                    b.resetBoard();
+                }
                 b.printBoard();
 
             }
