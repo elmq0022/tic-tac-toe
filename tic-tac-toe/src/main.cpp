@@ -9,7 +9,29 @@ const int SCREEN_HEIGHT = 600;
 SDL_Window* gWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 
+class Texture
+{
+    public:
+        Texture();
+        ~Texture();
+
+        bool loadFromFile(std::string path);
+        void free();
+        void render(int x, int y);
+        int getWidth();
+        int getHeight();
+
+    private:
+        SDL_Texture* texture;
+        int width;
+        int height;
+};
+
+Texture xTexture;
+Texture oTexture;
+
 bool init();
+bool loadMedia();
 void clean();
 
 bool init(){
@@ -39,6 +61,24 @@ bool init(){
     return true;
 }
 
+bool loadMedia()
+{
+    if(!xTexture.loadFromFile("/home/zero/game-clones/tic-tac-toe/tic-tac-toe/resources/theX.png"))
+    {
+        // TODO: logging
+        std::cout << "could not load theO.png" << std::endl;
+        return false;
+    }
+
+    if(!oTexture.loadFromFile("/home/zero/game-clones/tic-tac-toe/tic-tac-toe/resources/theO.png"))
+    {
+        // TODO: logging
+        std::cout << "could not load theO.png" << std::endl;
+        return false;
+    }
+    return true;
+}
+
 void clean(){
     SDL_DestroyRenderer(gRenderer);
     SDL_DestroyWindow(gWindow);
@@ -62,6 +102,7 @@ class Board
         int updateBoard(int col, int row);
         void resetBoard();
         void printBoard();
+        int getSquare(int x, int y);
 };
 
 Board::Board()
@@ -153,8 +194,84 @@ void Board::printBoard()
     std::cout << this->grid[6] << " " << this->grid[7] << " " << this->grid[8] << std::endl;
 }
 
+int Board::getSquare(int x, int y)
+{
+    return this->grid[3*y + x];
+}
+
+
+Texture::Texture()
+{
+    this->texture = NULL;
+    this->width = 0;
+    this->height = 0;
+}
+
+Texture::~Texture()
+{
+    free();
+}
+
+bool Texture::loadFromFile(std::string path)
+{
+    free();
+    SDL_Texture* newTexture = NULL;
+
+    SDL_Surface* loadedSurface = IMG_Load(path.c_str());
+    if(loadedSurface == NULL)
+    {
+        // TODO: log message
+        return false;
+    }
+
+    newTexture = SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
+    if(newTexture == NULL)
+    {
+        //TODO: log message
+        return false;
+    }
+
+    this->width = loadedSurface->w;
+    this->height = loadedSurface->h;
+    SDL_FreeSurface(loadedSurface);
+    
+    this->texture = newTexture;
+    return this->texture != NULL;
+}
+
+void Texture::free()
+{
+    if(this->texture != NULL)
+    {
+        SDL_DestroyTexture(texture);
+        this->texture=NULL;
+        this->width=0;
+        this->height=0;
+    }
+}
+
+void Texture::render(int x, int y)
+{
+    SDL_Rect renderQuad = {x, y, this->width, this->height};
+    SDL_RenderCopy(gRenderer, this->texture, NULL, &renderQuad);
+}
+
+int Texture::getWidth()
+{
+    return this->width;
+}
+
+int Texture::getHeight()
+{
+    return this->height;
+}
+
 int main(int, char**){
     if(!init()){
+        return 1;
+    }
+
+    if(!loadMedia()){
         return 1;
     }
     
@@ -190,6 +307,25 @@ int main(int, char**){
 
         SDL_SetRenderDrawColor(gRenderer, 255, 255, 255, 255);
         SDL_RenderClear(gRenderer);
+        
+        int val = -1;
+        //Render the Xs and the Os on the board
+        for(int x=0; x<3; x++)
+        {
+            for(int y=0; y<3; y++)
+            {
+               val = b.getSquare(x, y);
+               if(val==0)
+               {
+                   xTexture.render(x*SCREEN_WIDTH/3, y*SCREEN_HEIGHT/3);
+               }
+               else if(val==1)
+               {
+                   oTexture.render(x*SCREEN_WIDTH/3, y*SCREEN_HEIGHT/3);
+               }
+            }
+        }
+         
 
         SDL_SetRenderDrawColor(gRenderer, 0, 0, 255, 255);
         SDL_RenderDrawLine(gRenderer, 0, SCREEN_HEIGHT/3, SCREEN_WIDTH, SCREEN_HEIGHT/3);
